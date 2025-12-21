@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request: {}
+  schedule:
+    - cron: '0 2 * * *' # daily at 02:00 UTC
 
 jobs:
   test:
@@ -39,3 +42,36 @@ jobs:
 
     - name: Run tests
       run: npm test
+
+  k6_performance:
+    if: github.event_name == 'pull_request' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Start API (background)
+      run: |
+        nohup npm start > server.log 2>&1 &
+        sleep 10
+
+    - name: Wait for API to start
+      run: |
+        until curl -s http://localhost:3000 >/dev/null; do
+          echo "Waiting for server to start..."
+          sleep 2
+        done
+
+    - name: Run k6 performance test
+      uses: grafana/k6-action@v3
+      with:
+        script: test/k6/cadastroHabito.test.js
+        args: -e BASE_URL=http://localhost:3000
