@@ -75,4 +75,14 @@ jobs:
     - name: Run k6 performance test (docker)
       run: |
         # Use host networking so the k6 container can reach the API started on the runner (localhost:3000)
-        docker run --rm --network host -v "${{ github.workspace }}":/src -w /src grafana/k6:latest run test/k6/cadastroHabito.test.js -e BASE_URL=http://localhost:3000
+        # First run k6 and export raw results to JSON, then convert JSON to an HTML report
+        docker run --rm --network host -v "${{ github.workspace }}":/src -w /src grafana/k6:latest \
+          sh -c "k6 run --out json=/src/test/k6/results.json test/k6/cadastroHabito.test.js -e BASE_URL=http://localhost:3000 && k6 report --out html=/src/test/k6/report.html /src/test/k6/results.json"
+
+    - name: Upload k6 results
+      uses: actions/upload-artifact@v3
+      with:
+        name: k6-report
+        path: |
+          test/k6/report.html
+          test/k6/results.json
