@@ -40,8 +40,10 @@ jobs:
           sleep 2
         done
 
-    - name: Run tests
-      run: npm test
+    - name: Run unit tests (exclude k6)
+      run: |
+        # Run only unit tests under test/controller and test/external to avoid executing k6 scripts with Node
+        npx mocha "test/{controller,external}/**/*.test.js" --exit
 
   k6_performance:
     if: github.event_name == 'pull_request' || github.event_name == 'schedule'
