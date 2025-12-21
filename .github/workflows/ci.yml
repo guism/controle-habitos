@@ -72,8 +72,6 @@ jobs:
           sleep 2
         done
 
-    - name: Run k6 performance test
-      uses: grafana/k6-action@v3
-      with:
-        script: test/k6/cadastroHabito.test.js
-        args: -e BASE_URL=http://localhost:3000
+    - name: Run k6 performance test (docker)
+      run: |
+        docker run --rm -v "${{ github.workspace }}":/src -w /src grafana/k6:latest run test/k6/cadastroHabito.test.js -e BASE_URL=http://localhost:3000
