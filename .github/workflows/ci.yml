@@ -46,7 +46,7 @@ jobs:
         npx mocha "test/{controller,external}/**/*.test.js" --exit
 
   k6_performance:
-    if: github.event_name == 'pull_request' || github.event_name == 'schedule'
+    needs: test
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
