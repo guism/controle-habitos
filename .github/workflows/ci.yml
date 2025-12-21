@@ -72,27 +72,7 @@ jobs:
           sleep 2
         done
 
-    - name: Prepare k6 output directory
-      run: |
-        mkdir -p test/k6
-        chmod 777 test/k6
-
     - name: Run k6 performance test (docker)
       run: |
         # Use host networking so the k6 container can reach the API started on the runner (localhost:3000)
-        # Run the k6 'run' subcommand directly (no shell). Export raw results to JSON.
-        docker run --rm --network host -v "${{ github.workspace }}":/src -w /src \
-          grafana/k6:latest run --out json=/src/test/k6/results.json test/k6/cadastroHabito.test.js -e BASE_URL=http://localhost:3000
-
-    - name: Generate HTML report from k6 JSON
-      run: |
-        # Use k6-reporter (installed on-the-fly via npx) to convert JSON to HTML
-        npx --yes k6-reporter test/k6/results.json -o test/k6/report.html
-
-    - name: Upload k6 results and report
-      uses: actions/upload-artifact@v4
-      with:
-        name: k6-report
-        path: |
-          test/k6/results.json
-          test/k6/report.html
+        docker run --rm --network host -v "${{ github.workspace }}":/src -w /src grafana/k6:latest run test/k6/cadastroHabito.test.js -e BASE_URL=http://localhost:3000
