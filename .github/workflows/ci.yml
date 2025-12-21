@@ -74,4 +74,5 @@ jobs:
 
     - name: Run k6 performance test (docker)
       run: |
-        docker run --rm -v "${{ github.workspace }}":/src -w /src grafana/k6:latest run test/k6/cadastroHabito.test.js -e BASE_URL=http://localhost:3000
+        # Use host networking so the k6 container can reach the API started on the runner (localhost:3000)
+        docker run --rm --network host -v "${{ github.workspace }}":/src -w /src grafana/k6:latest run test/k6/cadastroHabito.test.js -e BASE_URL=http://localhost:3000
